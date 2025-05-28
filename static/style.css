@@ -1,0 +1,8 @@
+body { margin: 0; font-family: Arial, sans-serif; }
+.container { position: relative; overflow: hidden; width: 100%; height: 100vh; }
+.schedule { display: flex; position: relative; }
+.stage { flex: 1; border-right: 1px solid #ccc; padding: 10px; }
+.stage h2 { text-align: center; font-size: 16px; position: sticky; top: 0; background: white; z-index: 1; }
+.event { height: 60px; line-height: 60px; text-align: center; border-bottom: 1px solid #ddd; font-size: 14px; }
+.timeline { position: absolute; width: 100%; height: 2px; background: red; z-index: 2; transition: top 0.5s; }
+.error { color: red; text-align: center; padding: 20px; }
