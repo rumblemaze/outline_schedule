@@ -4,16 +4,26 @@ import pytz
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import threading
-import time
+import time as time_module
+import re
 
 app = Flask(__name__)
+
+# URL таблицы (замените на вашу)
+SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/18h1bFJ1Blj0StrvlJ_sjbR4MgEE9BdUkfDlp6C-e7Ys/edit?gid=0#gid=0"
+# Извлечение ID таблицы из URL
+try:
+    SPREADSHEET_ID = re.search(r"/d/([a-zA-Z0-9-_]+)", SPREADSHEET_URL).group(1)
+except AttributeError:
+    print("Ошибка: Неверный формат URL таблицы")
+    SPREADSHEET_ID = None
 
 # Настройка Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 try:
     creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     client = gspread.authorize(creds)
-    sheet = client.open("Outline Schedule").sheet1  # Замените на имя вашей таблицы
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1 if SPREADSHEET_ID else None
 except Exception as e:
     print(f"Ошибка настройки Google Sheets: {e}")
     sheet = None
@@ -41,10 +51,10 @@ def update_schedule():
                             events.append({"time": time, "dj": dj})
                     schedule["stages"].append({"name": stage, "events": events})
                 schedule_cache = schedule
-                last_updated = time.time()
+                last_updated = time_module.time()
             except Exception as e:
                 print(f"Ошибка обновления расписания: {e}")
-        time.sleep(UPDATE_INTERVAL)
+        time_module.sleep(UPDATE_INTERVAL)
 
 # Запуск фонового обновления
 if sheet:
@@ -71,10 +81,12 @@ def get_timeline():
 @app.route('/')
 def index():
     try:
-        with open('templates/index.html', 'r') as file:
+        with open('templates/index.html', 'r', encoding='utf-8') as file:
             return file.read()
     except FileNotFoundError:
         return "Ошибка: index.html не найден", 500
+    except UnicodeDecodeError:
+        return "Ошибка: Неверная кодировка файла index.html", 500
 
 if __name__ == '__main__':
     app.run(debug=True)
