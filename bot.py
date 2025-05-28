@@ -4,7 +4,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Откройте расписание фестиваля!",
-        # reply_markup={"inline_keyboard": [[{"text": "Открыть расписание", "web_app": {"url": "YOUR_SERVER_URL"}}]]}
+        reply_markup={"inline_keyboard": [[{"text": "Открыть расписание", "web_app": {"url": "http://localhost:5000"}}]]}
     )
 
 if __name__ == "__main__":
