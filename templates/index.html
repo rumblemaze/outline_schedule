@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расписание фестиваля</title>
-    <script src="https://cdn.jsdelivr.net/npm/pinch-zoom-js@2.3.5/dist/pinch-zoom.umd.min.js"></script>
+    <script src="/static/pinch-zoom.umd.min.js"></script>
     <style>
         body { margin: 0; font-family: Arial, sans-serif; }
         .container { position: relative; overflow: hidden; width: 100%; height: 100vh; }
@@ -23,32 +23,15 @@
     </div>
     <script>
         window.onload = () => {
-            // Диагностика PinchZoom
-            console.log('PinchZoom:', PinchZoom);
-            let PinchZoomConstructor = PinchZoom;
-
-            // Проверка различных вариантов экспорта
-            if (typeof PinchZoom === 'undefined') {
-                document.getElementById('schedule').innerHTML = '<div class="error">PinchZoom не загружен</div>';
-                console.error('PinchZoom is undefined');
-                return;
-            }
-
-            if (PinchZoom && typeof PinchZoom.default === 'function') {
-                PinchZoomConstructor = PinchZoom.default; // Для UMD-модулей
-                console.log('Using PinchZoom.default:', PinchZoomConstructor);
-            }
-
-            if (typeof PinchZoomConstructor !== 'function') {
-                document.getElementById('schedule').innerHTML = '<div class="error">PinchZoom не является конструктором</div>';
-                console.error('PinchZoom is not a constructor:', PinchZoomConstructor);
-                return;
-            }
-
+            console.log('Проверка PinchZoom:', window.PinchZoom);
             function updateSchedule() {
                 fetch('/api/schedule')
                     .then(response => {
-                        if (!response.ok) throw new Error('Ошибка загрузки расписания');
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(`Ошибка загрузки расписания: ${err.error || response.status} - ${response.statusText}`);
+                            });
+                        }
                         return response.json();
                     })
                     .then(data => {
@@ -67,22 +50,27 @@
                             scheduleDiv.appendChild(stageDiv);
                         });
                         // Инициализация PinchZoom
-                        if (!scheduleDiv.dataset.pinchZoom) {
-                            try {
-                                new PinchZoomConstructor(scheduleDiv, {
-                                    maxZoom: 3,
-                                    minZoom: 0.5,
-                                    lockDragAxis: false,
-                                    use2d: false,
-                                    zoomControlScale: 1,
-                                    tapZoomFactor: 0
-                                });
-                                scheduleDiv.dataset.pinchZoom = 'true';
-                                console.log('PinchZoom initialized successfully');
-                            } catch (e) {
-                                console.error('Error initializing PinchZoom:', e);
-                                scheduleDiv.innerHTML = '<div class="error">Ошибка инициализации PinchZoom</div>';
+                        if (window.PinchZoom) {
+                            if (!scheduleDiv.dataset.pinchZoom) {
+                                try {
+                                    new window.PinchZoom(scheduleDiv, {
+                                        maxZoom: 3,
+                                        minZoom: 0.5,
+                                        lockDragAxis: false,
+                                        use2d: false,
+                                        zoomControlScale: 1,
+                                        tapZoomFactor: 0
+                                    });
+                                    scheduleDiv.dataset.pinchZoom = 'true';
+                                    console.log('PinchZoom инициализирован');
+                                } catch (e) {
+                                    console.error('Ошибка инициализации PinchZoom:', e);
+                                }
                             }
+                        } else {
+                            console.error('PinchZoom не определен в window');
+                            const scheduleDiv = document.getElementById('schedule');
+                            scheduleDiv.innerHTML = `<div class="error">PinchZoom не доступен</div>`;
                         }
                     })
                     .catch(error => {
@@ -94,7 +82,11 @@
             function updateTimeline() {
                 fetch('/api/timeline')
                     .then(response => {
-                        if (!response.ok) throw new Error('Ошибка загрузки таймлайна');
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(`Ошибка загрузки таймлайна: ${err.error || response.status} - ${response.statusText}`);
+                            });
+                        }
                         return response.json();
                     })
                     .then(data => {
@@ -102,15 +94,18 @@
                         const scheduleHeight = document.getElementById('schedule').offsetHeight;
                         timeline.style.top = `${(data.offset / 100) * scheduleHeight}px`;
                     })
-                    .catch(error => console.error('Ошибка таймлайна:', error));
+                    .catch(error => {
+                        console.error('Ошибка таймлайна:', error);
+                        const timeline = document.getElementById('timeline');
+                        timeline.innerHTML = `<div class="error">${error.message}</div>`;
+                    });
             }
 
-            // Обновление каждые 30 секунд
             setInterval(() => {
                 updateSchedule();
                 updateTimeline();
             }, 30000);
-            updateSchedule(); // Начальная загрузка
+            updateSchedule();
             updateTimeline();
         };
     </script>
