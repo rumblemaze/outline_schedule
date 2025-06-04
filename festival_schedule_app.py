@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from datetime import datetime
 import pytz
 import logging
@@ -52,27 +52,38 @@ def get_schedule():
 
 @app.route('/api/timeline', methods=['GET'])
 def get_timeline():
-    now = datetime.now(pytz.timezone('Europe/Helsinki'))
-    start_time = now.replace(hour=19, minute=0, second=0, microsecond=0)
-    end_time = now.replace(hour=23, minute=0, second=0, microsecond=0)
-    total_minutes = (end_time - start_time).total_seconds() / 60
-    elapsed_minutes = (now - start_time).total_seconds() / 60
-    if elapsed_minutes < 0 or elapsed_minutes > total_minutes:
+    now = datetime.now(pytz.timezone('Europe/Moscow'))
+    current_time = now.hour + now.minute / 60
+    
+    # Находим ближайшее время в расписании
+    min_time = float('inf')
+    max_time = float('-inf')
+    
+    for stage in schedule_cache.get('stages', []):
+        for event in stage.get('events', []):
+            time_str = event.get('time', '')
+            if time_str:
+                hours, minutes = map(int, time_str.split(':'))
+                event_time = hours + minutes / 60
+                min_time = min(min_time, event_time)
+                max_time = max(max_time, event_time)
+    
+    if min_time == float('inf') or max_time == float('-inf'):
         return jsonify({"offset": 0})
-    offset = (elapsed_minutes / total_minutes) * 100
-    return jsonify({"offset": offset})
+    
+    # Вычисляем смещение текущего времени
+    total_duration = max_time - min_time
+    if total_duration == 0:
+        return jsonify({"offset": 0})
+    
+    current_offset = (current_time - min_time) / total_duration
+    current_offset = max(0, min(1, current_offset))  # Ограничиваем значения от 0 до 1
+    
+    return jsonify({"offset": current_offset * 100})
 
 @app.route('/')
 def index():
-    try:
-        index_path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
-        with open(index_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    except FileNotFoundError:
-        directories = [d for d in os.listdir(os.path.dirname(__file__)) if os.path.isdir(d)]
-        return f"Ошибка: index.html не найден. Доступные директории: {', '.join(directories)}", 500
-    except UnicodeDecodeError:
-        return "Ошибка: Неверная кодировка файла index.html", 500
+    return send_from_directory('templates', 'index.html')
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True, host='0.0.0.0', port=5000)

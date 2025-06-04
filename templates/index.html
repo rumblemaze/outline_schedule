@@ -2,275 +2,233 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расписание фестиваля</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="/static/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        html, body {
+        * {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-            -webkit-text-size-adjust: 100%;
-            touch-action: none;
+            box-sizing: border-box;
         }
-        #map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 1;
-        }
-        .time-column {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 30px;
-            height: 100vh;
-            background: transparent;
-            color: #fff;
-            font-size: 12px;
-            text-align: center;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .stage-row {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 30px;
-            width: 100vw;
-            background: transparent;
-            color: #fff;
-            font-size: 12px;
-            text-align: center;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .timeline {
-            position: fixed;
-            width: 100%;
-            height: 2px;
-            background: red;
-            z-index: 3;
-            transition: top 0.5s;
-            pointer-events: none;
-        }
-        .error {
-            color: red;
-            text-align: center;
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
             padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline-container {
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .current-time-marker {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 4;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background: #ff3e3e;
+            z-index: 1000;
+            transition: left 0.5s ease;
         }
-        .event-marker {
-            background: transparent !important;
-            border: none !important;
+
+        .stages {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .event-marker div {
-            background: transparent !important;
-            border: none !important;
-            color: #fff !important;
+
+        .stage {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .stage-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ff3e3e;
+        }
+
+        .events {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .event {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .event:hover {
+            transform: scale(1.05);
+        }
+
+        .event-time {
+            font-size: 18px;
+            color: #ff3e3e;
+            margin-bottom: 5px;
+        }
+
+        .event-dj {
+            font-size: 16px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            background: rgba(42, 42, 42, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .zoom-btn {
+            background: #ff3e3e;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: #ff5252;
+        }
+
+        .current-stage {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.3);
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-    <div class="time-column" id="timeColumn"></div>
-    <div class="stage-row" id="stageRow"></div>
-    <div class="timeline" id="timeline"></div>
+    <div class="container">
+        <div class="timeline-container">
+            <div class="current-time-marker"></div>
+            <div class="stages" id="stages"></div>
+        </div>
+    </div>
+    <div class="controls">
+        <button class="zoom-btn" onclick="zoomIn()">+</button>
+        <button class="zoom-btn" onclick="zoomOut()">-</button>
+    </div>
+
     <script>
-        window.onload = () => {
-            // Отключаем зум страницы
-            document.addEventListener('gesturestart', (e) => e.preventDefault());
-            document.addEventListener('gesturechange', (e) => e.preventDefault());
-            document.addEventListener('gestureend', (e) => e.preventDefault());
+        let currentZoom = 1;
+        const ZOOM_STEP = 0.1;
+        const MAX_ZOOM = 2;
+        const MIN_ZOOM = 0.5;
 
-            // Инициализация карты
-            const map = L.map('map', {
-                crs: L.CRS.Simple,
-                minZoom: 0,
-                maxZoom: 3,
-                zoom: 0,
-                center: [0, 0],
-                zoomControl: false,
-                attributionControl: false,
-                inertia: true,
-                bounceAtZoomLimits: false
-            });
+        function updateCurrentTimeMarker() {
+            fetch('/api/timeline')
+                .then(response => response.json())
+                .then(data => {
+                    const marker = document.querySelector('.current-time-marker');
+                    marker.style.left = `${data.offset}%`;
+                });
+        }
 
-            // Настраиваем размеры карты
-            const mapWidth = window.innerWidth;
-            const mapHeight = window.innerHeight;
-            const bounds = [[0, 0], [mapHeight, mapWidth]];
-            L.imageOverlay('#333', bounds).addTo(map); // Фон
-            map.setMaxBounds(bounds);
+        function updateSchedule() {
+            fetch('/api/schedule')
+                .then(response => response.json())
+                .then(data => {
+                    const stagesContainer = document.getElementById('stages');
+                    stagesContainer.innerHTML = '';
 
-            // Константы
-            const timeColumnWidth = 30;
-            const stageColumnWidth = 100;
-            const headerHeight = 30;
-            const cellHeight = 34;
-            const times = [];
-            const startDate = new Date('2025-05-29T15:00:00');
-            const endDate = new Date('2025-06-01T23:00:00');
+                    data.stages.forEach(stage => {
+                        const stageElement = document.createElement('div');
+                        stageElement.className = 'stage';
+                        stageElement.innerHTML = `
+                            <div class="stage-header">${stage.name}</div>
+                            <div class="events">
+                                ${stage.events.map(event => `
+                                    <div class="event">
+                                        <div class="event-time">${event.time}</div>
+                                        <div class="event-dj">${event.dj}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        stagesContainer.appendChild(stageElement);
+                    });
 
-            for (let d = new Date(startDate); d <= endDate; d.setHours(d.getHours() + 1)) {
-                const time = d.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
-                times.push(time);
-            }
+                    highlightCurrentStage();
+                });
+        }
 
-            let totalWidth = timeColumnWidth + 5 * stageColumnWidth;
-            let totalHeight = headerHeight + times.length * cellHeight;
+        function highlightCurrentStage() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTime = currentHour + currentMinute / 60;
 
-            // Обновление фиксированных элементов при скролле
-            map.on('move', () => {
-                const center = map.getCenter();
-                const zoom = map.getZoom();
-                const scale = Math.pow(2, zoom);
-                
-                // Обновляем позиции фиксированных элементов
-                const timeColumn = document.getElementById('timeColumn');
-                const stageRow = document.getElementById('stageRow');
-                
-                // Обновляем содержимое столбца времени
-                timeColumn.innerHTML = '';
-                times.forEach((time, index) => {
-                    const y = headerHeight + index * cellHeight;
-                    const screenY = (y - center.y) * scale + window.innerHeight / 2;
-                    if (screenY >= 0 && screenY <= window.innerHeight) {
-                        const timeDiv = document.createElement('div');
-                        timeDiv.style.position = 'absolute';
-                        timeDiv.style.top = `${screenY}px`;
-                        timeDiv.style.width = '100%';
-                        timeDiv.style.height = `${cellHeight}px`;
-                        timeDiv.style.lineHeight = `${cellHeight}px`;
-                        timeDiv.textContent = time;
-                        timeColumn.appendChild(timeDiv);
+            const stages = document.querySelectorAll('.stage');
+            stages.forEach(stage => {
+                const events = stage.querySelectorAll('.event');
+                let isCurrentStage = false;
+
+                events.forEach(event => {
+                    const timeText = event.querySelector('.event-time').textContent;
+                    const [hours, minutes] = timeText.split(':').map(Number);
+                    const eventTime = hours + minutes / 60;
+
+                    if (Math.abs(eventTime - currentTime) < 1) {
+                        isCurrentStage = true;
                     }
                 });
 
-                // Обновляем содержимое строки сцен
-                stageRow.innerHTML = '';
-                const stages = ['JEON', 'DARK', 'wmast', 'Shadow', 'onPulse'];
-                stages.forEach((stage, index) => {
-                    const x = timeColumnWidth + index * stageColumnWidth;
-                    const screenX = (x - center.x) * scale + window.innerWidth / 2;
-                    if (screenX >= 0 && screenX <= window.innerWidth) {
-                        const stageDiv = document.createElement('div');
-                        stageDiv.style.position = 'absolute';
-                        stageDiv.style.left = `${screenX}px`;
-                        stageDiv.style.width = `${stageColumnWidth}px`;
-                        stageDiv.style.height = '100%';
-                        stageDiv.style.lineHeight = `${headerHeight}px`;
-                        stageDiv.textContent = stage;
-                        stageRow.appendChild(stageDiv);
-                    }
-                });
+                stage.classList.toggle('current-stage', isCurrentStage);
             });
+        }
 
-            // Загрузка расписания
-            function updateSchedule() {
-                fetch('/api/schedule')
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw new Error(`Ошибка загрузки: ${err.error || response.statusText}`);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        // Очистка карты
-                        map.eachLayer(layer => {
-                            if (!layer instanceof L.Control) {
-                                map.removeLayer(layer);
-                            }
-                        });
-
-                        // Обновляем размеры на основе данных
-                        totalWidth = timeColumnWidth + data.stages.length * stageColumnWidth;
-                        totalHeight = headerHeight + times.length * cellHeight;
-                        
-                        // Устанавливаем границы карты
-                        const bounds = [[0, 0], [totalHeight, totalWidth]];
-                        map.setMaxBounds(bounds);
-                        
-                        // Устанавливаем начальный центр
-                        map.setView([totalHeight / 2, totalWidth / 2], 0);
-
-                        // Рисуем события
-                        times.forEach((time, timeIndex) => {
-                            const y = headerHeight + timeIndex * cellHeight;
-                            data.stages.forEach((stage, stageIndex) => {
-                                const x = timeColumnWidth + stageIndex * stageColumnWidth;
-                                const event = stage.events.find(e =>
-                                    e.time === `Thu ${time}` || e.time === `Fri ${time}` ||
-                                    e.time === `Sat ${time}` || e.time === `Sun ${time}`
-                                );
-                                if (event) {
-                                    const marker = L.marker([y + cellHeight / 2, x + stageColumnWidth / 2], {
-                                        icon: L.divIcon({
-                                            className: 'event-marker',
-                                            html: `<div style="width: ${stageColumnWidth}px; height: ${cellHeight}px; line-height: ${cellHeight}px; text-align: center;">${event.dj}</div>`
-                                        })
-                                    }).addTo(map);
-                                }
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        document.body.innerHTML = `<div class="error">${error.message}</div>`;
-                    });
+        function zoomIn() {
+            if (currentZoom < MAX_ZOOM) {
+                currentZoom += ZOOM_STEP;
+                updateZoom();
             }
+        }
 
-            // Обновление таймлайна
-            function updateTimeline() {
-                fetch('/api/timeline')
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw new Error(`Ошибка таймлайна: ${err.error || response.statusText}`);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const timeline = document.getElementById('timeline');
-                        const mapHeight = map.getSize().y;
-                        const scaledHeight = totalHeight * map.getZoom() / map.options.maxZoom;
-                        timeline.style.top = `${(data.offset / 100) * scaledHeight}px`;
-                    })
-                    .catch(error => {
-                        console.error('Ошибка таймлайна:', error);
-                    });
+        function zoomOut() {
+            if (currentZoom > MIN_ZOOM) {
+                currentZoom -= ZOOM_STEP;
+                updateZoom();
             }
+        }
 
-            // Периодическое обновление
-            setInterval(() => {
-                updateSchedule();
-                updateTimeline();
-            }, 30000);
+        function updateZoom() {
+            const stages = document.querySelector('.stages');
+            stages.style.transform = `scale(${currentZoom})`;
+        }
 
-            // Начальная загрузка
+        // Обновляем данные каждую минуту
+        setInterval(() => {
+            updateCurrentTimeMarker();
             updateSchedule();
-            updateTimeline();
+        }, 60000);
 
-            // Обработка изменения размера окна
-            window.addEventListener('resize', () => {
-                const newWidth = window.innerWidth;
-                const newHeight = window.innerHeight;
-                map.setView([newHeight / 2, newWidth / 2], map.getZoom(), { animate: false });
-                map.invalidateSize();
-            });
-        };
+        // Инициализация
+        updateCurrentTimeMarker();
+        updateSchedule();
     </script>
 </body>
 </html>
