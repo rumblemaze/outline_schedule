@@ -5,7 +5,7 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
 .schedule-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
 
 .stages-header {
-    position: fixed;
+    position: relative;
     top: 0;
     left: 0;
     right: 0;
@@ -122,4 +122,10 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
 .current-event {
     background: #ff3e3e20;
     border: 1px solid #ff3e3e;
+}
+.zoom-wrapper {
+    transform-origin: top left;
+    will-change: transform;
+    width: fit-content;
+    height: fit-content;
 }

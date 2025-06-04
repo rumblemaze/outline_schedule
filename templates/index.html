@@ -8,27 +8,32 @@
     <link href="/static/style.css" rel="stylesheet">
     <style>
         /* Стили удалены, теперь они в static/style.css */
+        .zoom-wrapper {
+            transform-origin: top left;
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
     <div class="schedule-container" style="position:relative; width:100vw; height:100vh;">
-        <div class="stages-header" id="stagesHeader"></div>
         <div class="schedule-viewport" id="scheduleViewport">
-            <div class="time-column" id="timeColumn"></div>
-            <div class="schedule-grid" id="scheduleGrid"></div>
+            <div class="zoom-wrapper" id="zoomWrapper">
+                <div class="stages-header" id="stagesHeader"></div>
+                <div style="display:flex; flex-direction:row;">
+                    <div class="time-column" id="timeColumn"></div>
+                    <div class="schedule-grid" id="scheduleGrid"></div>
+                </div>
+            </div>
         </div>
         <div class="current-time-marker" id="currentTimeMarker"></div>
-        <div class="controls">
-            <button class="zoom-btn" onclick="zoomIn()">+</button>
-            <button class="zoom-btn" onclick="zoomOut()">-</button>
-        </div>
     </div>
 
     <script>
         let currentZoom = 1;
-        const ZOOM_STEP = 0.1;
-        const MAX_ZOOM = 2;
         const MIN_ZOOM = 0.5;
+        const MAX_ZOOM = 2;
+        const zoomWrapper = document.getElementById('zoomWrapper');
+        const scheduleViewport = document.getElementById('scheduleViewport');
         let scheduleData = null;
 
         function formatTime(timeStr) {
@@ -118,25 +123,38 @@
             });
         }
 
-        function zoomIn() {
-            if (currentZoom < MAX_ZOOM) {
-                currentZoom += ZOOM_STEP;
-                updateZoom();
-            }
+        // Применить зум
+        function setZoom(zoom) {
+            currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
+            zoomWrapper.style.transform = `scale(${currentZoom})`;
         }
 
-        function zoomOut() {
-            if (currentZoom > MIN_ZOOM) {
-                currentZoom -= ZOOM_STEP;
-                updateZoom();
+        // Pinch-to-zoom (touch)
+        let lastDist = null;
+        scheduleViewport.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (lastDist) {
+                    const delta = dist - lastDist;
+                    setZoom(currentZoom + delta * 0.003); // чувствительность
+                }
+                lastDist = dist;
             }
-        }
+        }, { passive: false });
+        scheduleViewport.addEventListener('touchend', function(e) {
+            if (e.touches.length < 2) lastDist = null;
+        });
 
-        function updateZoom() {
-            const scheduleGrid = document.getElementById('scheduleGrid');
-            scheduleGrid.style.transform = `scale(${currentZoom})`;
-            scheduleGrid.style.transformOrigin = 'top left';
-        }
+        // Ctrl+wheel (desktop)
+        scheduleViewport.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                setZoom(currentZoom - e.deltaY * 0.001);
+            }
+        }, { passive: false });
 
         // Обновляем данные каждую минуту
         setInterval(() => {
