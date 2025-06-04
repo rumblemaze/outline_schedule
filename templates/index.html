@@ -16,14 +16,11 @@
 </head>
 <body>
     <div class="schedule-container" style="position:relative; width:100vw; height:100vh;">
+        <div class="time-column" id="timeColumn"></div>
         <div class="stages-header" id="stagesHeader"></div>
-        <div class="current-time-bar" id="currentTimeBar">23:23</div>
         <div class="schedule-viewport" id="scheduleViewport">
             <div class="zoom-wrapper" id="zoomWrapper">
-                <div style="display:flex; flex-direction:row;">
-                    <div class="time-column" id="timeColumn"></div>
-                    <div class="schedule-grid" id="scheduleGrid"></div>
-                </div>
+                <div class="schedule-grid" id="scheduleGrid"></div>
             </div>
         </div>
         <div class="current-time-marker" id="currentTimeMarker"></div>
@@ -109,6 +106,10 @@
             `).join('');
 
             highlightCurrentEvents();
+
+            // Для теста: бегунок времени на 400px от верха
+            const marker = document.getElementById('currentTimeMarker');
+            marker.style.top = '400px';
         }
 
         function highlightCurrentEvents() {
