@@ -120,17 +120,14 @@
             highlightCurrentEvents();
 
             // === Динамический бегунок времени (середина фестиваля) ===
-            // Найти координаты первой и последней time-slot
             const timeSlots = document.querySelectorAll('.time-slot');
             if (timeSlots.length > 1) {
-                const first = timeSlots[0].getBoundingClientRect();
-                const last = timeSlots[timeSlots.length - 1].getBoundingClientRect();
-                // Середина между первой и последней строкой
-                const mid = (first.top + last.top + last.height) / 2;
-                // Относительно schedule-viewport
+                const midIdx = Math.floor(timeSlots.length / 2);
+                const midSlot = timeSlots[midIdx];
+                const slotRect = midSlot.getBoundingClientRect();
                 const viewportTop = document.getElementById('scheduleViewport').getBoundingClientRect().top;
                 const marker = document.getElementById('currentTimeMarker');
-                marker.style.top = (mid - viewportTop) + 'px';
+                marker.style.top = (slotRect.top - viewportTop + slotRect.height / 2) + 'px';
             }
         }
 
