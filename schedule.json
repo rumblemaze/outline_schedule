@@ -1,0 +1,49 @@
+{
+       "stages": [
+           {
+               "name": "MAIN",
+               "events": [
+                   {"time": "19:00", "dj": "Ruanum Jlyvancrull"},
+                   {"time": "20:00", "dj": "NDONNA"},
+                   {"time": "21:00", "dj": "Myca Kyorsona"},
+                   {"time": "22:00", "dj": "DJ Starlight"}
+               ]
+           },
+           {
+               "name": "SUN",
+               "events": [
+                   {"time": "19:00", "dj": "Sandra Frakenberg"},
+                   {"time": "20:00", "dj": "Beautiful Boya"},
+                   {"time": "21:00", "dj": "Merele - show"},
+                   {"time": "22:00", "dj": "Trance Voyager"}
+               ]
+           },
+           {
+               "name": "WOODZ",
+               "events": [
+                   {"time": "19:00", "dj": "DJ Forest"},
+                   {"time": "20:00", "dj": "Woodland Beats"},
+                   {"time": "21:00", "dj": "Echo Pine"},
+                   {"time": "22:00", "dj": "Mystic Grove"}
+               ]
+           },
+           {
+               "name": "NEON",
+               "events": [
+                   {"time": "19:00", "dj": "Glowmaster"},
+                   {"time": "20:00", "dj": "Neon Pulse"},
+                   {"time": "21:00", "dj": "Lightwave"},
+                   {"time": "22:00", "dj": "Electro Spark"}
+               ]
+           },
+           {
+               "name": "DARK",
+               "events": [
+                   {"time": "19:00", "dj": "Shadowmix"},
+                   {"time": "20:00", "dj": "Midnight Vibe"},
+                   {"time": "21:00", "dj": "Dark Echo"},
+                   {"time": "22:00", "dj": "Nightshade"}
+               ]
+           }
+       ]
+   }
