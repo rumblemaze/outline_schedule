@@ -145,3 +145,19 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
     height: calc(100vh - 60px);
     overflow: auto;
 }
+
+.stages-header-inner {
+    width: fit-content;
+    height: fit-content;
+    transform-origin: top left;
+    will-change: transform;
+    display: flex;
+}
+.time-column-inner {
+    width: fit-content;
+    height: fit-content;
+    transform-origin: top left;
+    will-change: transform;
+    display: flex;
+    flex-direction: column;
+}

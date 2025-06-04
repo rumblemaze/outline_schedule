@@ -16,8 +16,8 @@
 </head>
 <body>
     <div class="schedule-container" style="position:relative; width:100vw; height:100vh;">
-        <div class="stages-header" id="stagesHeader"></div>
-        <div class="time-column" id="timeColumn"></div>
+        <div class="stages-header" id="stagesHeader"><div class="stages-header-inner" id="stagesHeaderInner"></div></div>
+        <div class="time-column" id="timeColumn"><div class="time-column-inner" id="timeColumnInner"></div></div>
         <div class="schedule-viewport" id="scheduleViewport">
             <div class="zoom-wrapper" id="zoomWrapper">
                 <div class="schedule-grid" id="scheduleGrid"></div>
@@ -32,8 +32,8 @@
         const MAX_ZOOM = 2;
         const zoomWrapper = document.getElementById('zoomWrapper');
         const scheduleViewport = document.getElementById('scheduleViewport');
-        const timeColumn = document.getElementById('timeColumn');
-        const stagesHeader = document.getElementById('stagesHeader');
+        const timeColumnInner = document.getElementById('timeColumnInner');
+        const stagesHeaderInner = document.getElementById('stagesHeaderInner');
         let scheduleData = null;
 
         // Синхронизация скроллов
@@ -89,14 +89,14 @@
             const sortedTimes = Array.from(times).sort();
 
             // Рендерим колонку времени (только время!)
-            timeColumn.innerHTML = sortedTimes.map(time => `
+            timeColumnInner.innerHTML = sortedTimes.map(time => `
                 <div class="time-slot">
                     ${formatTime(time)}
                 </div>
             `).join('');
 
             // Рендерим заголовки сцен
-            stagesHeader.innerHTML = scheduleData.stages.map(stage => `
+            stagesHeaderInner.innerHTML = scheduleData.stages.map(stage => `
                 <div class="stage-header">${stage.name}</div>
             `).join('');
 
@@ -141,6 +141,8 @@
         function setZoom(zoom) {
             currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
             zoomWrapper.style.transform = `scale(${currentZoom})`;
+            stagesHeaderInner.style.transform = `scale(${currentZoom})`;
+            timeColumnInner.style.transform = `scale(${currentZoom})`;
         }
 
         // Pinch-to-zoom (touch)
