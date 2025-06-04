@@ -60,7 +60,8 @@ def get_timeline():
     
     for stage in schedule_cache.get('stages', []):
         for event in stage.get('events', []):
-            event_time = datetime.strptime(event['time'], '%Y-%m-%d %H:%M')
+            moscow = pytz.timezone('Europe/Moscow')
+            event_time = moscow.localize(datetime.strptime(event['time'], '%Y-%m-%d %H:%M'))
             if min_time is None or event_time < min_time:
                 min_time = event_time
             if max_time is None or event_time > max_time:
