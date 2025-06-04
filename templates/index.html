@@ -12,9 +12,9 @@
 </head>
 <body>
     <div class="schedule-container" style="position:relative; width:100vw; height:100vh;">
-        <div class="time-column" id="timeColumn"></div>
+        <div class="stages-header" id="stagesHeader"></div>
         <div class="schedule-viewport" id="scheduleViewport">
-            <div class="stages-header" id="stagesHeader"></div>
+            <div class="time-column" id="timeColumn"></div>
             <div class="schedule-grid" id="scheduleGrid"></div>
         </div>
         <div class="current-time-marker" id="currentTimeMarker"></div>
@@ -137,17 +137,6 @@
             scheduleGrid.style.transform = `scale(${currentZoom})`;
             scheduleGrid.style.transformOrigin = 'top left';
         }
-
-        // Синхронизация скролла
-        const timeColumn = document.getElementById('timeColumn');
-        const scheduleViewport = document.getElementById('scheduleViewport');
-
-        scheduleViewport.addEventListener('scroll', () => {
-            timeColumn.scrollTop = scheduleViewport.scrollTop;
-        });
-        timeColumn.addEventListener('scroll', () => {
-            scheduleViewport.scrollTop = timeColumn.scrollTop;
-        });
 
         // Обновляем данные каждую минуту
         setInterval(() => {
