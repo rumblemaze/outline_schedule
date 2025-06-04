@@ -17,75 +17,125 @@
             background: #1a1a1a;
             color: #ffffff;
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .timeline-container {
-            position: relative;
-            margin: 20px 0;
             overflow: hidden;
         }
 
-        .current-time-marker {
-            position: absolute;
+        .schedule-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .time-column {
+            position: fixed;
             left: 0;
-            width: 2px;
-            height: 100%;
-            background: #ff3e3e;
-            z-index: 1000;
-            transition: left 0.5s ease;
-        }
-
-        .stages {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .stage {
+            top: 0;
+            width: 80px;
+            height: 100vh;
             background: #2a2a2a;
-            border-radius: 10px;
-            padding: 20px;
-            transition: transform 0.3s ease;
+            z-index: 100;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .time-column::-webkit-scrollbar {
+            display: none;
+        }
+
+        .time-slot {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ff3e3e;
+            border-bottom: 1px solid #333;
+        }
+
+        .stages-container {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        .stages-header {
+            position: fixed;
+            top: 0;
+            left: 80px;
+            right: 0;
+            height: 60px;
+            background: #2a2a2a;
+            z-index: 90;
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .stages-header::-webkit-scrollbar {
+            display: none;
         }
 
         .stage-header {
-            font-size: 24px;
+            min-width: 200px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 15px;
             color: #ff3e3e;
+            border-right: 1px solid #333;
+            padding: 0 20px;
+            white-space: nowrap;
         }
 
-        .events {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+        .schedule-grid {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            display: flex;
         }
 
-        .event {
+        .stage-column {
+            min-width: 200px;
+            border-right: 1px solid #333;
+        }
+
+        .event-slot {
+            height: 100px;
+            border-bottom: 1px solid #333;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             background: #333;
-            padding: 15px;
-            border-radius: 8px;
             transition: transform 0.2s ease;
         }
 
-        .event:hover {
+        .event-slot:hover {
             transform: scale(1.05);
-        }
-
-        .event-time {
-            font-size: 18px;
-            color: #ff3e3e;
-            margin-bottom: 5px;
+            z-index: 10;
         }
 
         .event-dj {
-            font-size: 16px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .current-time-marker {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ff3e3e;
+            z-index: 1000;
+            pointer-events: none;
+            transition: top 0.5s ease;
         }
 
         .controls {
@@ -115,22 +165,24 @@
             background: #ff5252;
         }
 
-        .current-stage {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255, 62, 62, 0.3);
+        .current-event {
+            background: #ff3e3e20;
+            border: 1px solid #ff3e3e;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="timeline-container">
-            <div class="current-time-marker"></div>
-            <div class="stages" id="stages"></div>
+    <div class="schedule-container">
+        <div class="time-column" id="timeColumn"></div>
+        <div class="stages-container">
+            <div class="stages-header" id="stagesHeader"></div>
+            <div class="schedule-grid" id="scheduleGrid"></div>
         </div>
-    </div>
-    <div class="controls">
-        <button class="zoom-btn" onclick="zoomIn()">+</button>
-        <button class="zoom-btn" onclick="zoomOut()">-</button>
+        <div class="current-time-marker" id="currentTimeMarker"></div>
+        <div class="controls">
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+            <button class="zoom-btn" onclick="zoomOut()">-</button>
+        </div>
     </div>
 
     <script>
@@ -138,13 +190,24 @@
         const ZOOM_STEP = 0.1;
         const MAX_ZOOM = 2;
         const MIN_ZOOM = 0.5;
+        let scheduleData = null;
+
+        function formatTime(timeStr) {
+            const date = new Date(timeStr);
+            return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatDate(timeStr) {
+            const date = new Date(timeStr);
+            return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        }
 
         function updateCurrentTimeMarker() {
             fetch('/api/timeline')
                 .then(response => response.json())
                 .then(data => {
-                    const marker = document.querySelector('.current-time-marker');
-                    marker.style.left = `${data.offset}%`;
+                    const marker = document.getElementById('currentTimeMarker');
+                    marker.style.top = `${data.offset}%`;
                 });
         }
 
@@ -152,52 +215,70 @@
             fetch('/api/schedule')
                 .then(response => response.json())
                 .then(data => {
-                    const stagesContainer = document.getElementById('stages');
-                    stagesContainer.innerHTML = '';
-
-                    data.stages.forEach(stage => {
-                        const stageElement = document.createElement('div');
-                        stageElement.className = 'stage';
-                        stageElement.innerHTML = `
-                            <div class="stage-header">${stage.name}</div>
-                            <div class="events">
-                                ${stage.events.map(event => `
-                                    <div class="event">
-                                        <div class="event-time">${event.time}</div>
-                                        <div class="event-dj">${event.dj}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `;
-                        stagesContainer.appendChild(stageElement);
-                    });
-
-                    highlightCurrentStage();
+                    scheduleData = data;
+                    renderSchedule();
                 });
         }
 
-        function highlightCurrentStage() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const currentTime = currentHour + currentMinute / 60;
+        function renderSchedule() {
+            if (!scheduleData) return;
 
-            const stages = document.querySelectorAll('.stage');
-            stages.forEach(stage => {
-                const events = stage.querySelectorAll('.event');
-                let isCurrentStage = false;
-
-                events.forEach(event => {
-                    const timeText = event.querySelector('.event-time').textContent;
-                    const [hours, minutes] = timeText.split(':').map(Number);
-                    const eventTime = hours + minutes / 60;
-
-                    if (Math.abs(eventTime - currentTime) < 1) {
-                        isCurrentStage = true;
-                    }
+            // Получаем все уникальные времена
+            const times = new Set();
+            scheduleData.stages.forEach(stage => {
+                stage.events.forEach(event => {
+                    times.add(event.time);
                 });
+            });
+            const sortedTimes = Array.from(times).sort();
 
-                stage.classList.toggle('current-stage', isCurrentStage);
+            // Рендерим колонку времени
+            const timeColumn = document.getElementById('timeColumn');
+            timeColumn.innerHTML = sortedTimes.map(time => `
+                <div class="time-slot">
+                    <div>
+                        <div>${formatTime(time)}</div>
+                        <div style="font-size: 10px; color: #666;">${formatDate(time)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Рендерим заголовки сцен
+            const stagesHeader = document.getElementById('stagesHeader');
+            stagesHeader.innerHTML = scheduleData.stages.map(stage => `
+                <div class="stage-header">${stage.name}</div>
+            `).join('');
+
+            // Рендерим сетку расписания
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            scheduleGrid.innerHTML = scheduleData.stages.map(stage => `
+                <div class="stage-column">
+                    ${sortedTimes.map(time => {
+                        const event = stage.events.find(e => e.time === time);
+                        return `
+                            <div class="event-slot" data-time="${time}">
+                                ${event ? `
+                                    <div class="event-dj">${event.dj}</div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `).join('');
+
+            highlightCurrentEvents();
+        }
+
+        function highlightCurrentEvents() {
+            const now = new Date();
+            const currentTime = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+
+            document.querySelectorAll('.event-slot').forEach(slot => {
+                const slotTime = slot.dataset.time;
+                const slotDate = new Date(slotTime);
+                const timeDiff = Math.abs(slotDate - now) / (1000 * 60); // разница в минутах
+
+                slot.classList.toggle('current-event', timeDiff < 60); // подсвечиваем события в течение часа
             });
         }
 
@@ -216,9 +297,22 @@
         }
 
         function updateZoom() {
-            const stages = document.querySelector('.stages');
-            stages.style.transform = `scale(${currentZoom})`;
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            scheduleGrid.style.transform = `scale(${currentZoom})`;
+            scheduleGrid.style.transformOrigin = 'top left';
         }
+
+        // Синхронизация скролла
+        const timeColumn = document.getElementById('timeColumn');
+        const stagesContainer = document.querySelector('.stages-container');
+
+        timeColumn.addEventListener('scroll', () => {
+            stagesContainer.scrollTop = timeColumn.scrollTop;
+        });
+
+        stagesContainer.addEventListener('scroll', () => {
+            timeColumn.scrollTop = stagesContainer.scrollTop;
+        });
 
         // Обновляем данные каждую минуту
         setInterval(() => {

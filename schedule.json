@@ -1,49 +1,120 @@
 {
-       "stages": [
-           {
-               "name": "MAIN",
-               "events": [
-                   {"time": "19:00", "dj": "Ruanum Jlyvancrull"},
-                   {"time": "20:00", "dj": "NDONNA"},
-                   {"time": "21:00", "dj": "Myca Kyorsona"},
-                   {"time": "22:00", "dj": "DJ Starlight"}
-               ]
-           },
-           {
-               "name": "SUN",
-               "events": [
-                   {"time": "19:00", "dj": "Sandra Frakenberg"},
-                   {"time": "20:00", "dj": "Beautiful Boya"},
-                   {"time": "21:00", "dj": "Merele - show"},
-                   {"time": "22:00", "dj": "Trance Voyager"}
-               ]
-           },
-           {
-               "name": "WOODZ",
-               "events": [
-                   {"time": "19:00", "dj": "DJ Forest"},
-                   {"time": "20:00", "dj": "Woodland Beats"},
-                   {"time": "21:00", "dj": "Echo Pine"},
-                   {"time": "22:00", "dj": "Mystic Grove"}
-               ]
-           },
-           {
-               "name": "NEON",
-               "events": [
-                   {"time": "19:00", "dj": "Glowmaster"},
-                   {"time": "20:00", "dj": "Neon Pulse"},
-                   {"time": "21:00", "dj": "Lightwave"},
-                   {"time": "22:00", "dj": "Electro Spark"}
-               ]
-           },
-           {
-               "name": "DARK",
-               "events": [
-                   {"time": "19:00", "dj": "Shadowmix"},
-                   {"time": "20:00", "dj": "Midnight Vibe"},
-                   {"time": "21:00", "dj": "Dark Echo"},
-                   {"time": "22:00", "dj": "Nightshade"}
-               ]
-           }
-       ]
-   }
+    "stages": [
+        {
+            "name": "MAIN",
+            "events": [
+                {"time": "2024-05-30 12:00", "dj": "Cosmic Voyager"},
+                {"time": "2024-05-30 14:00", "dj": "Neon Pulse"},
+                {"time": "2024-05-30 16:00", "dj": "Digital Dreamer"},
+                {"time": "2024-05-30 18:00", "dj": "Echo Wave"},
+                {"time": "2024-05-30 20:00", "dj": "Midnight Rider"},
+                {"time": "2024-05-30 22:00", "dj": "Stellar Beats"},
+                {"time": "2024-05-31 12:00", "dj": "Quantum Flux"},
+                {"time": "2024-05-31 14:00", "dj": "Solar Wind"},
+                {"time": "2024-05-31 16:00", "dj": "Lunar Phase"},
+                {"time": "2024-05-31 18:00", "dj": "Cosmic Dust"},
+                {"time": "2024-05-31 20:00", "dj": "Nebula Sound"},
+                {"time": "2024-05-31 22:00", "dj": "Galactic Pulse"},
+                {"time": "2024-06-01 12:00", "dj": "Star Child"},
+                {"time": "2024-06-01 14:00", "dj": "Moon Walker"},
+                {"time": "2024-06-01 16:00", "dj": "Sun Seeker"},
+                {"time": "2024-06-01 18:00", "dj": "Earth Shaker"},
+                {"time": "2024-06-01 20:00", "dj": "Mars Rover"},
+                {"time": "2024-06-01 22:00", "dj": "Jupiter Jump"},
+                {"time": "2024-06-02 12:00", "dj": "Saturn Rings"},
+                {"time": "2024-06-02 14:00", "dj": "Uranus Flow"},
+                {"time": "2024-06-02 16:00", "dj": "Neptune Wave"},
+                {"time": "2024-06-02 18:00", "dj": "Pluto Beat"},
+                {"time": "2024-06-02 20:00", "dj": "Mercury Rising"},
+                {"time": "2024-06-02 22:00", "dj": "Venus Fly"}
+            ]
+        },
+        {
+            "name": "WOODZ",
+            "events": [
+                {"time": "2024-05-30 12:00", "dj": "Forest Spirit"},
+                {"time": "2024-05-30 14:00", "dj": "Woodland Echo"},
+                {"time": "2024-05-30 16:00", "dj": "Pine Groove"},
+                {"time": "2024-05-30 18:00", "dj": "Oak Rhythm"},
+                {"time": "2024-05-30 20:00", "dj": "Maple Beat"},
+                {"time": "2024-05-30 22:00", "dj": "Birch Bass"},
+                {"time": "2024-05-31 12:00", "dj": "Cedar Sound"},
+                {"time": "2024-05-31 14:00", "dj": "Elm Wave"},
+                {"time": "2024-05-31 16:00", "dj": "Ash Flow"},
+                {"time": "2024-05-31 18:00", "dj": "Beech Beat"},
+                {"time": "2024-05-31 20:00", "dj": "Chestnut Groove"},
+                {"time": "2024-05-31 22:00", "dj": "Walnut Bass"},
+                {"time": "2024-06-01 12:00", "dj": "Pineapple Beat"},
+                {"time": "2024-06-01 14:00", "dj": "Coconut Flow"},
+                {"time": "2024-06-01 16:00", "dj": "Banana Groove"},
+                {"time": "2024-06-01 18:00", "dj": "Mango Bass"},
+                {"time": "2024-06-01 20:00", "dj": "Kiwi Sound"},
+                {"time": "2024-06-01 22:00", "dj": "Peach Wave"},
+                {"time": "2024-06-02 12:00", "dj": "Apple Beat"},
+                {"time": "2024-06-02 14:00", "dj": "Pear Flow"},
+                {"time": "2024-06-02 16:00", "dj": "Plum Groove"},
+                {"time": "2024-06-02 18:00", "dj": "Cherry Bass"},
+                {"time": "2024-06-02 20:00", "dj": "Berry Sound"},
+                {"time": "2024-06-02 22:00", "dj": "Grape Wave"}
+            ]
+        },
+        {
+            "name": "NEON",
+            "events": [
+                {"time": "2024-05-30 12:00", "dj": "Neon Lights"},
+                {"time": "2024-05-30 14:00", "dj": "Glow Master"},
+                {"time": "2024-05-30 16:00", "dj": "Bright Future"},
+                {"time": "2024-05-30 18:00", "dj": "Shine On"},
+                {"time": "2024-05-30 20:00", "dj": "Light Wave"},
+                {"time": "2024-05-30 22:00", "dj": "Spark Beat"},
+                {"time": "2024-05-31 12:00", "dj": "Flash Point"},
+                {"time": "2024-05-31 14:00", "dj": "Beam Rider"},
+                {"time": "2024-05-31 16:00", "dj": "Ray Master"},
+                {"time": "2024-05-31 18:00", "dj": "Photon Flow"},
+                {"time": "2024-05-31 20:00", "dj": "Laser Beat"},
+                {"time": "2024-05-31 22:00", "dj": "Quantum Light"},
+                {"time": "2024-06-01 12:00", "dj": "Solar Flare"},
+                {"time": "2024-06-01 14:00", "dj": "Lunar Glow"},
+                {"time": "2024-06-01 16:00", "dj": "Stellar Light"},
+                {"time": "2024-06-01 18:00", "dj": "Cosmic Ray"},
+                {"time": "2024-06-01 20:00", "dj": "Galactic Beam"},
+                {"time": "2024-06-01 22:00", "dj": "Nebula Flash"},
+                {"time": "2024-06-02 12:00", "dj": "Star Light"},
+                {"time": "2024-06-02 14:00", "dj": "Moon Beam"},
+                {"time": "2024-06-02 16:00", "dj": "Sun Ray"},
+                {"time": "2024-06-02 18:00", "dj": "Earth Light"},
+                {"time": "2024-06-02 20:00", "dj": "Mars Glow"},
+                {"time": "2024-06-02 22:00", "dj": "Jupiter Flash"}
+            ]
+        },
+        {
+            "name": "DARK",
+            "events": [
+                {"time": "2024-05-30 12:00", "dj": "Shadow Master"},
+                {"time": "2024-05-30 14:00", "dj": "Dark Matter"},
+                {"time": "2024-05-30 16:00", "dj": "Black Hole"},
+                {"time": "2024-05-30 18:00", "dj": "Night Rider"},
+                {"time": "2024-05-30 20:00", "dj": "Midnight Flow"},
+                {"time": "2024-05-30 22:00", "dj": "Dark Beat"},
+                {"time": "2024-05-31 12:00", "dj": "Shadow Wave"},
+                {"time": "2024-05-31 14:00", "dj": "Dark Pulse"},
+                {"time": "2024-05-31 16:00", "dj": "Black Light"},
+                {"time": "2024-05-31 18:00", "dj": "Night Sound"},
+                {"time": "2024-05-31 20:00", "dj": "Midnight Groove"},
+                {"time": "2024-05-31 22:00", "dj": "Dark Bass"},
+                {"time": "2024-06-01 12:00", "dj": "Shadow Flow"},
+                {"time": "2024-06-01 14:00", "dj": "Dark Wave"},
+                {"time": "2024-06-01 16:00", "dj": "Black Beat"},
+                {"time": "2024-06-01 18:00", "dj": "Night Light"},
+                {"time": "2024-06-01 20:00", "dj": "Midnight Sound"},
+                {"time": "2024-06-01 22:00", "dj": "Dark Groove"},
+                {"time": "2024-06-02 12:00", "dj": "Shadow Bass"},
+                {"time": "2024-06-02 14:00", "dj": "Dark Flow"},
+                {"time": "2024-06-02 16:00", "dj": "Black Wave"},
+                {"time": "2024-06-02 18:00", "dj": "Night Beat"},
+                {"time": "2024-06-02 20:00", "dj": "Midnight Light"},
+                {"time": "2024-06-02 22:00", "dj": "Dark Sound"}
+            ]
+        }
+    ]
+}

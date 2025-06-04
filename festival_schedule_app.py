@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, send_from_directory
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import logging
 import os
@@ -53,30 +53,28 @@ def get_schedule():
 @app.route('/api/timeline', methods=['GET'])
 def get_timeline():
     now = datetime.now(pytz.timezone('Europe/Moscow'))
-    current_time = now.hour + now.minute / 60
     
     # Находим ближайшее время в расписании
-    min_time = float('inf')
-    max_time = float('-inf')
+    min_time = None
+    max_time = None
     
     for stage in schedule_cache.get('stages', []):
         for event in stage.get('events', []):
-            time_str = event.get('time', '')
-            if time_str:
-                hours, minutes = map(int, time_str.split(':'))
-                event_time = hours + minutes / 60
-                min_time = min(min_time, event_time)
-                max_time = max(max_time, event_time)
+            event_time = datetime.strptime(event['time'], '%Y-%m-%d %H:%M')
+            if min_time is None or event_time < min_time:
+                min_time = event_time
+            if max_time is None or event_time > max_time:
+                max_time = event_time
     
-    if min_time == float('inf') or max_time == float('-inf'):
+    if min_time is None or max_time is None:
         return jsonify({"offset": 0})
     
     # Вычисляем смещение текущего времени
-    total_duration = max_time - min_time
+    total_duration = (max_time - min_time).total_seconds()
     if total_duration == 0:
         return jsonify({"offset": 0})
     
-    current_offset = (current_time - min_time) / total_duration
+    current_offset = (now - min_time).total_seconds() / total_duration
     current_offset = max(0, min(1, current_offset))  # Ограничиваем значения от 0 до 1
     
     return jsonify({"offset": current_offset * 100})
