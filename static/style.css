@@ -28,7 +28,8 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
     font-weight: 700;
     color: #ff3e3e;
     border-right: 1px solid #333;
-    padding: 0 20px;
+    padding-left: 20px;
+    padding-right: 20px;
     white-space: nowrap;
 }
 
@@ -49,8 +50,10 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
     height: 100px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     border-bottom: 1px solid #333;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .schedule-grid {
@@ -76,8 +79,9 @@ body { font-family: 'Roboto', Arial, sans-serif; background: #1a1a1a; color: #ff
     z-index: 10;
 }
 .event-dj {
-    font-size: 14px;
+    font-size: 16px;
     margin-top: 5px;
+    word-break: break-word;
 }
 .current-time-marker {
     position: fixed;
