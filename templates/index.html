@@ -25,29 +25,40 @@
             height: 100vh;
             z-index: 1;
         }
-        .time-column, .stage-row {
-            position: absolute;
-            background: #333;
+        .time-column {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 100vh;
+            background: transparent;
             color: #fff;
-            font-size: 14px;
+            font-size: 12px;
             text-align: center;
             z-index: 2;
-        }
-        .time-column {
-            width: 40px;
-            left: 0;
+            pointer-events: none;
         }
         .stage-row {
-            height: 34px;
+            position: fixed;
             top: 0;
+            left: 0;
+            height: 30px;
+            width: 100vw;
+            background: transparent;
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            z-index: 2;
+            pointer-events: none;
         }
         .timeline {
-            position: absolute;
+            position: fixed;
             width: 100%;
             height: 2px;
             background: red;
             z-index: 3;
             transition: top 0.5s;
+            pointer-events: none;
         }
         .error {
             color: red;
@@ -59,10 +70,21 @@
             transform: translate(-50%, -50%);
             z-index: 4;
         }
+        .event-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        .event-marker div {
+            background: transparent !important;
+            border: none !important;
+            color: #fff !important;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <div class="time-column" id="timeColumn"></div>
+    <div class="stage-row" id="stageRow"></div>
     <div class="timeline" id="timeline"></div>
     <script>
         window.onload = () => {
@@ -74,13 +96,14 @@
             // Инициализация карты
             const map = L.map('map', {
                 crs: L.CRS.Simple,
-                minZoom: -1,
+                minZoom: 0,
                 maxZoom: 3,
                 zoom: 0,
                 center: [0, 0],
                 zoomControl: false,
                 attributionControl: false,
-                inertia: true
+                inertia: true,
+                bounceAtZoomLimits: false
             });
 
             // Настраиваем размеры карты
@@ -91,9 +114,9 @@
             map.setMaxBounds(bounds);
 
             // Константы
-            const timeColumnWidth = 40;
+            const timeColumnWidth = 30;
             const stageColumnWidth = 100;
-            const headerHeight = 34;
+            const headerHeight = 30;
             const cellHeight = 34;
             const times = [];
             const startDate = new Date('2025-05-29T15:00:00');
@@ -104,44 +127,54 @@
                 times.push(time);
             }
 
-            let totalWidth = timeColumnWidth + 5 * stageColumnWidth; // Пример с 5 сценами
+            let totalWidth = timeColumnWidth + 5 * stageColumnWidth;
             let totalHeight = headerHeight + times.length * cellHeight;
 
-            // Фиксированный столбец времени
-            const timeColumn = L.control({ position: 'topleft' });
-            timeColumn.onAdd = function () {
-                const div = L.DomUtil.create('div', 'time-column');
-                div.style.height = `${totalHeight}px`;
+            // Обновление фиксированных элементов при скролле
+            map.on('move', () => {
+                const center = map.getCenter();
+                const zoom = map.getZoom();
+                const scale = Math.pow(2, zoom);
+                
+                // Обновляем позиции фиксированных элементов
+                const timeColumn = document.getElementById('timeColumn');
+                const stageRow = document.getElementById('stageRow');
+                
+                // Обновляем содержимое столбца времени
+                timeColumn.innerHTML = '';
                 times.forEach((time, index) => {
-                    const timeDiv = document.createElement('div');
-                    timeDiv.style.height = `${cellHeight}px`;
-                    timeDiv.style.lineHeight = `${cellHeight}px`;
-                    timeDiv.textContent = time;
-                    div.appendChild(timeDiv);
+                    const y = headerHeight + index * cellHeight;
+                    const screenY = (y - center.y) * scale + window.innerHeight / 2;
+                    if (screenY >= 0 && screenY <= window.innerHeight) {
+                        const timeDiv = document.createElement('div');
+                        timeDiv.style.position = 'absolute';
+                        timeDiv.style.top = `${screenY}px`;
+                        timeDiv.style.width = '100%';
+                        timeDiv.style.height = `${cellHeight}px`;
+                        timeDiv.style.lineHeight = `${cellHeight}px`;
+                        timeDiv.textContent = time;
+                        timeColumn.appendChild(timeDiv);
+                    }
                 });
-                return div;
-            };
-            timeColumn.addTo(map);
 
-            // Фиксированная строка сцен
-            const stageRow = L.control({ position: 'topleft' });
-            stageRow.onAdd = function () {
-                const div = L.DomUtil.create('div', 'stage-row');
-                div.style.width = `${totalWidth}px`;
-                div.style.height = `${headerHeight}px`;
-                div.style.lineHeight = `${headerHeight}px`;
-                // Пример сцен (заменить данными из API)
+                // Обновляем содержимое строки сцен
+                stageRow.innerHTML = '';
                 const stages = ['JEON', 'DARK', 'wmast', 'Shadow', 'onPulse'];
                 stages.forEach((stage, index) => {
-                    const stageDiv = document.createElement('div');
-                    stageDiv.style.width = `${stageColumnWidth}px`;
-                    stageDiv.style.display = 'inline-block';
-                    stageDiv.textContent = stage;
-                    div.appendChild(stageDiv);
+                    const x = timeColumnWidth + index * stageColumnWidth;
+                    const screenX = (x - center.x) * scale + window.innerWidth / 2;
+                    if (screenX >= 0 && screenX <= window.innerWidth) {
+                        const stageDiv = document.createElement('div');
+                        stageDiv.style.position = 'absolute';
+                        stageDiv.style.left = `${screenX}px`;
+                        stageDiv.style.width = `${stageColumnWidth}px`;
+                        stageDiv.style.height = '100%';
+                        stageDiv.style.lineHeight = `${headerHeight}px`;
+                        stageDiv.textContent = stage;
+                        stageRow.appendChild(stageDiv);
+                    }
                 });
-                return div;
-            };
-            stageRow.addTo(map);
+            });
 
             // Загрузка расписания
             function updateSchedule() {
@@ -165,10 +198,15 @@
                         // Обновляем размеры на основе данных
                         totalWidth = timeColumnWidth + data.stages.length * stageColumnWidth;
                         totalHeight = headerHeight + times.length * cellHeight;
+                        
+                        // Устанавливаем границы карты
                         const bounds = [[0, 0], [totalHeight, totalWidth]];
                         map.setMaxBounds(bounds);
+                        
+                        // Устанавливаем начальный центр
+                        map.setView([totalHeight / 2, totalWidth / 2], 0);
 
-                        // Рисуем сетку с событиями
+                        // Рисуем события
                         times.forEach((time, timeIndex) => {
                             const y = headerHeight + timeIndex * cellHeight;
                             data.stages.forEach((stage, stageIndex) => {
@@ -181,38 +219,11 @@
                                     const marker = L.marker([y + cellHeight / 2, x + stageColumnWidth / 2], {
                                         icon: L.divIcon({
                                             className: 'event-marker',
-                                            html: `<div style="width: ${stageColumnWidth}px; height: ${cellHeight}px; line-height: ${cellHeight}px; text-align: center; color: #fff;">${event.dj}</div>`
+                                            html: `<div style="width: ${stageColumnWidth}px; height: ${cellHeight}px; line-height: ${cellHeight}px; text-align: center;">${event.dj}</div>`
                                         })
                                     }).addTo(map);
                                 }
                             });
-
-                            // Линии дней
-                            if (timeIndex % 24 === 0 && timeIndex > 0) {
-                                L.polyline([[y, 0], [y, totalWidth]], { color: 'red', weight: 2 }).addTo(map);
-                            }
-                        });
-
-                        // Линии сцен
-                        data.stages.forEach((stage, index) => {
-                            if (index > 0) {
-                                const x = timeColumnWidth + index * stageColumnWidth;
-                                L.polyline([[0, x], [totalHeight, x]], { color: 'green', weight: 2 }).addTo(map);
-                            }
-                        });
-
-                        // Обновляем фиксированные элементы
-                        timeColumn.getContainer().style.height = `${totalHeight}px`;
-                        stageRow.getContainer().style.width = `${totalWidth}px`;
-                        const stages = data.stages.map(s => s.name);
-                        stageRow.getContainer().innerHTML = '';
-                        stages.forEach((stage, index) => {
-                            const stageDiv = document.createElement('div');
-                            stageDiv.style.width = `${stageColumnWidth}px`;
-                            stageDiv.style.display = 'inline-block';
-                            stageDiv.style.lineHeight = `${headerHeight}px`;
-                            stageDiv.textContent = stage;
-                            stageRow.getContainer().appendChild(stageDiv);
                         });
                     })
                     .catch(error => {
@@ -239,8 +250,6 @@
                     })
                     .catch(error => {
                         console.error('Ошибка таймлайна:', error);
-                        const timeline = document.getElementById('timeline');
-                        timeline.innerHTML = `<div class="error">${error.message}</div>`;
                     });
             }
 
@@ -250,6 +259,7 @@
                 updateTimeline();
             }, 30000);
 
+            // Начальная загрузка
             updateSchedule();
             updateTimeline();
 
