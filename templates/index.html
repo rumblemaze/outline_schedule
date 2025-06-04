@@ -16,8 +16,8 @@
 </head>
 <body>
     <div class="schedule-container" style="position:relative; width:100vw; height:100vh;">
-        <div class="time-column" id="timeColumn"></div>
         <div class="stages-header" id="stagesHeader"></div>
+        <div class="time-column" id="timeColumn"></div>
         <div class="schedule-viewport" id="scheduleViewport">
             <div class="zoom-wrapper" id="zoomWrapper">
                 <div class="schedule-grid" id="scheduleGrid"></div>
@@ -32,7 +32,21 @@
         const MAX_ZOOM = 2;
         const zoomWrapper = document.getElementById('zoomWrapper');
         const scheduleViewport = document.getElementById('scheduleViewport');
+        const timeColumn = document.getElementById('timeColumn');
+        const stagesHeader = document.getElementById('stagesHeader');
         let scheduleData = null;
+
+        // Синхронизация скроллов
+        scheduleViewport.addEventListener('scroll', () => {
+            timeColumn.scrollTop = scheduleViewport.scrollTop;
+            stagesHeader.scrollLeft = scheduleViewport.scrollLeft;
+        });
+        timeColumn.addEventListener('scroll', () => {
+            scheduleViewport.scrollTop = timeColumn.scrollTop;
+        });
+        stagesHeader.addEventListener('scroll', () => {
+            scheduleViewport.scrollLeft = stagesHeader.scrollLeft;
+        });
 
         function formatTime(timeStr) {
             const date = new Date(timeStr);
@@ -75,7 +89,6 @@
             const sortedTimes = Array.from(times).sort();
 
             // Рендерим колонку времени (только время!)
-            const timeColumn = document.getElementById('timeColumn');
             timeColumn.innerHTML = sortedTimes.map(time => `
                 <div class="time-slot">
                     ${formatTime(time)}
@@ -83,7 +96,6 @@
             `).join('');
 
             // Рендерим заголовки сцен
-            const stagesHeader = document.getElementById('stagesHeader');
             stagesHeader.innerHTML = scheduleData.stages.map(stage => `
                 <div class="stage-header">${stage.name}</div>
             `).join('');
